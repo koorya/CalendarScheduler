@@ -12,7 +12,7 @@ function main() {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SCHEDULE_SHEET_NAME);
   if (!display_sheet) throw Error('sheet not found');
 
-  clearScreen(display_sheet);
+  clearScreen(display_sheet, days_back + days_fw + 1);
 
   renderDayGrid({ days_fw, days_back, display_sheet });
 
@@ -22,7 +22,7 @@ function main() {
     day_offset: days_back,
     days_fw,
     x_offset: 2,
-    y_offset: 3,
+    y_offset: 4,
     calendar_events,
     display_sheet,
   });
@@ -61,7 +61,7 @@ function renderPlaces(
     }
   });
 
-  display_sheet.getRange(4, 3, 1, 100).breakApart();
+  display_sheet.getRange(4, 3, 1, display_sheet.getMaxColumns()).breakApart();
 
   edges.map(({ start, length, title }) =>
     display_sheet
@@ -153,7 +153,22 @@ function getCalendarEvents(days_back: number, days_fw: number) {
   return calendar_events;
 }
 
-function clearScreen(display_sheet: GoogleAppsScript.Spreadsheet.Sheet) {
-  display_sheet.getRange(4, 3, 100, 100).setBackground(INACTIVE_COLOR);
-  display_sheet.getRange(2, 3, 3, 100).setValue('');
+function clearScreen(
+  display_sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  days: number
+) {
+  const current_cnt = display_sheet.getMaxColumns();
+  if (current_cnt > days + 2) {
+    display_sheet.deleteColumns(days + 3, current_cnt - (days + 2));
+  } else if (current_cnt < days + 2) {
+    display_sheet.insertColumnsAfter(current_cnt, days + 2 - current_cnt);
+  }
+
+  const columns_cnt = display_sheet.getMaxColumns() - 2;
+  display_sheet.getRange(4, 3, 32, columns_cnt).setBackground(INACTIVE_COLOR);
+  display_sheet.getRange(2, 3, 3, columns_cnt).setValue('');
+  display_sheet
+    .getRange(1, 3, 1, display_sheet.getMaxColumns())
+    .breakApart()
+    .merge();
 }

@@ -35,5 +35,5 @@ function getCellsByTimeRange({
   return Array.from({ length: cell_cnt }, (x, i) => ({
     x: day + x_offset,
     y: i + y_start,
-  })).filter(({ y }) => y > y_offset);
+  })).filter(({ y }) => y >= y_offset);
 }
