@@ -13,7 +13,7 @@ function main() {
   if (!display_sheet) throw Error('sheet not found');
 
   clearScreen(display_sheet, days_back + days_fw + 1);
-
+  renderHeader(display_sheet);
   renderDayGrid({ days_fw, days_back, display_sheet });
 
   renderPlaces(calendar_events, display_sheet);
@@ -26,6 +26,13 @@ function main() {
     calendar_events,
     display_sheet,
   });
+}
+
+function renderHeader(display_sheet: GoogleAppsScript.Spreadsheet.Sheet) {
+  display_sheet
+    .getRange(1, 3, 1, display_sheet.getMaxColumns())
+    .breakApart()
+    .merge();
 }
 
 function renderPlaces(
@@ -79,9 +86,25 @@ function renderDayGrid(props: {
 }) {
   const { days_back, days_fw, display_sheet } = props;
   Array.from({ length: days_fw + days_back + 1 }, (x, i) => i + 1).map((x) => {
+    const today = new Date();
     const day = new Date(
-      Date.now() - 1000 * 60 * 60 * 24 * (days_back - x + 1)
+      today.getTime() - 1000 * 60 * 60 * 24 * (days_back - x + 1)
     );
+    const isToday =
+      Math.abs(today.getTime() - day.getTime()) < 1000 * 60 * 60 * 24;
+    if (isToday)
+      display_sheet
+        .getRange(2, x + 2, 2, 1)
+        .setBorder(
+          true,
+          true,
+          true,
+          true,
+          false,
+          false,
+          '#ffff00',
+          SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+        );
     display_sheet
       .getRange(2, x + 2)
       .setValue(
@@ -162,13 +185,21 @@ function clearScreen(
     display_sheet.deleteColumns(days + 3, current_cnt - (days + 2));
   } else if (current_cnt < days + 2) {
     display_sheet.insertColumnsAfter(current_cnt, days + 2 - current_cnt);
+    display_sheet
+      .getRange(7, 3, 2, 1)
+      .copyFormatToRange(
+        display_sheet.getSheetId(),
+        current_cnt + 1,
+        display_sheet.getMaxColumns(),
+        5,
+        35
+      );
   }
 
   const columns_cnt = display_sheet.getMaxColumns() - 2;
   display_sheet.getRange(4, 3, 32, columns_cnt).setBackground(INACTIVE_COLOR);
-  display_sheet.getRange(2, 3, 3, columns_cnt).setValue('');
   display_sheet
-    .getRange(1, 3, 1, display_sheet.getMaxColumns())
-    .breakApart()
-    .merge();
+    .getRange(2, 3, 3, columns_cnt)
+    .setValue('')
+    .setBorder(false, false, false, false, false, false);
 }
