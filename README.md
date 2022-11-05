@@ -7,7 +7,7 @@
 
 Логинимся в google apps script
 
-    clasp auth
+    clasp login
 
 Создаем файл `.clasp.json` с содержимым `example.clasp.json`, изменяем параметры на соответствующие.
 
@@ -20,3 +20,6 @@
     clasp push --watch
 
 Настройка триггеров и прочее делается из панели управления google apps script.
+
+Script Properties
+CALENDAR_ID - id календаря, который требуется отобразить.

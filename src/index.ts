@@ -1,6 +1,6 @@
 const SETTINGS_SHEET_NAME = 'Настройки';
 const SCHEDULE_SHEET_NAME = 'Расписание';
-const CALENDAR_NAME = 'Записи';
+const CALENDAR_ID_PROP_NAME = 'CALENDAR_ID';
 const ACTIVE_COLOR = '#ff0000';
 const INACTIVE_COLOR = '#ffffff';
 
@@ -162,7 +162,12 @@ function renderEvents(props: {
 }
 
 function getCalendarEvents(days_back: number, days_fw: number) {
-  const calendar = CalendarApp.getCalendarsByName(CALENDAR_NAME).pop();
+  const calendar_id = PropertiesService.getScriptProperties().getProperty(
+    CALENDAR_ID_PROP_NAME
+  );
+  if (!calendar_id) throw Error('CALENDAR_ID property not allowed');
+  const calendar = CalendarApp.getCalendarById(calendar_id);
+  if (!calendar) throw Error('Calendar not found');
   const start_time = new Date();
   start_time.setHours(0);
   start_time.setMinutes(0);
