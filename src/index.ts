@@ -1,13 +1,12 @@
 const SETTINGS_SHEET_NAME = 'Настройки';
 const SCHEDULE_SHEET_NAME = 'Расписание';
-const CALENDAR_ID_PROP_NAME = 'CALENDAR_ID';
 const ACTIVE_COLOR = '#ff0000';
 const INACTIVE_COLOR = '#ffffff';
 
 function main() {
-  const { days_back, days_fw } = getSettings();
-  const calendar_events = getCalendarEvents(days_back, days_fw);
-
+  const { days_back, days_fw, calendar_id, holidays_id } = getSettings();
+  const calendar_events = getCalendarEvents(days_back, days_fw, calendar_id);
+  const calendar_holidays = getCalendarEvents(days_back, days_fw, holidays_id);
   const display_sheet =
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SCHEDULE_SHEET_NAME);
   if (!display_sheet) throw Error('sheet not found');
@@ -18,6 +17,8 @@ function main() {
 
   renderPlaces(calendar_events, display_sheet);
 
+  renderHolidays(calendar_holidays, display_sheet, days_back, days_fw);
+
   renderEvents({
     day_offset: days_back,
     days_fw,
@@ -25,6 +26,35 @@ function main() {
     y_offset: 4,
     calendar_events,
     display_sheet,
+  });
+}
+
+function renderHolidays(
+  calendar_holidays: GoogleAppsScript.Calendar.CalendarEvent[],
+  display_sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  days_back: number,
+  days_fw: number
+) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const holidays = calendar_holidays.map((e) => e.getStartTime());
+
+  let curday = new Date(today);
+
+  for (
+    curday.setDate(curday.getDate() - days_back);
+    curday.getTime() < today.getTime() + 1000 * 60 * 60 * 24 * days_fw;
+    curday.setDate(curday.getDate() + 1)
+  )
+    if (curday.getDay() == 6 || curday.getDay() == 0)
+      holidays.push(new Date(curday));
+  holidays.map((holiday) => {
+    const x =
+      3 +
+      days_back +
+      (holiday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+
+    display_sheet.getRange(5, x, 31).setBackground('#dddddd');
   });
 }
 
@@ -125,7 +155,10 @@ function getSettings() {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SETTINGS_SHEET_NAME);
   const days_back = settings_sheet?.getRange(2, 1).getValue();
   const days_fw = settings_sheet?.getRange(2, 3).getValue();
-  return { days_back, days_fw };
+  const calendar_id = settings_sheet?.getRange(4, 2).getValue();
+  const holidays_id = settings_sheet?.getRange(5, 2).getValue();
+
+  return { days_back, days_fw, calendar_id, holidays_id };
 }
 
 function renderEvents(props: {
@@ -161,10 +194,11 @@ function renderEvents(props: {
   );
 }
 
-function getCalendarEvents(days_back: number, days_fw: number) {
-  const calendar_id = PropertiesService.getScriptProperties().getProperty(
-    CALENDAR_ID_PROP_NAME
-  );
+function getCalendarEvents(
+  days_back: number,
+  days_fw: number,
+  calendar_id: string
+) {
   if (!calendar_id) throw Error('CALENDAR_ID property not allowed');
   const calendar = CalendarApp.getCalendarById(calendar_id);
   if (!calendar) throw Error('Calendar not found');
