@@ -43,7 +43,7 @@ function renderHolidays(
 
   for (
     curday.setDate(curday.getDate() - days_back);
-    curday.getTime() < today.getTime() + 1000 * 60 * 60 * 24 * days_fw;
+    curday.getTime() < today.getTime() + 1000 * 60 * 60 * 24 * (days_fw + 1);
     curday.setDate(curday.getDate() + 1)
   )
     if (curday.getDay() == 6 || curday.getDay() == 0)
@@ -172,10 +172,8 @@ function renderEvents(props: {
   const { day_offset, x_offset, y_offset, calendar_events, display_sheet } =
     props;
   const today = new Date();
-  today.setHours(0);
-  today.setMinutes(0);
-  today.setSeconds(0);
-
+  today.setHours(0, 0, 0, 0);
+  calendar_events.map((e) => console.log(e.getStartTime()));
   const cells = calendar_events
     .map((e) =>
       getCellsByTimeRange({
@@ -203,14 +201,12 @@ function getCalendarEvents(
   const calendar = CalendarApp.getCalendarById(calendar_id);
   if (!calendar) throw Error('Calendar not found');
   const start_time = new Date();
-  start_time.setHours(0);
-  start_time.setMinutes(0);
-  start_time.setSeconds(0);
-  start_time.setMilliseconds(0);
+  start_time.setHours(0, 0, 0, 0);
 
   start_time.setDate(start_time.getDate() - days_back);
   const end_time = new Date();
-  end_time.setDate(end_time.getDate() + days_fw);
+  end_time.setHours(0, 0, 0, 0);
+  end_time.setDate(end_time.getDate() + days_fw + 1);
   const calendar_events = calendar?.getEvents(start_time, end_time) || [];
   return calendar_events;
 }
