@@ -106,6 +106,7 @@ function renderPlaces(
       .merge()
       .setValue(title.toUpperCase())
       .setHorizontalAlignment('center')
+      .setBorder(true, true, true, true, false, false)
   );
 }
 
