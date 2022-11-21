@@ -124,18 +124,9 @@ function renderDayGrid(props: {
     const isToday =
       Math.abs(today.getTime() - day.getTime()) < 1000 * 60 * 60 * 24;
     if (isToday)
-      display_sheet
-        .getRange(2, x + 2, 2, 1)
-        .setBorder(
-          true,
-          true,
-          true,
-          true,
-          false,
-          false,
-          '#ffff00',
-          SpreadsheetApp.BorderStyle.SOLID_MEDIUM
-        );
+      display_sheet.getRange(2, x + 2, 2, 1).setBackground('#F1C40F');
+    else display_sheet.getRange(2, x + 2, 2, 1).setBackground('#0b5394');
+
     display_sheet
       .getRange(2, x + 2)
       .setValue(
